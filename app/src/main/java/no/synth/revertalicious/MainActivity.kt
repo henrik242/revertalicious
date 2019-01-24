@@ -7,10 +7,9 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.revwalk.RevCommit
 import java.io.File
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
+        revert.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
 
             GitTask().execute("https://github.com/henrik242/testing123.git", applicationContext.filesDir.resolve("repo").absolutePath)
