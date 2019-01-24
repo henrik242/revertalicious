@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
             app:key="git_category"
@@ -42,7 +42,13 @@
         <Preference
                 app:key="feedback"
                 app:summary="@string/pref_feedback_summary"
-                app:title="@string/pref_feedback"/>
+                app:title="@string/pref_feedback">
+
+            <intent
+                    android:action="android.intent.action.VIEW"
+                    android:data="https://github.com/henrik242/revertalicious/issues"/>
+
+        </Preference>
 
     </PreferenceCategory>
 
