@@ -28,10 +28,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/revert"/>
     <ImageButton
-            android:layout_width="0dp"
-            android:layout_height="400dp"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:id="@+id/revert"
-            app:srcCompat="@android:drawable/ic_menu_revert"
+            android:src="@drawable/ic_revert"
+            android:background="@drawable/button_rounded"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
