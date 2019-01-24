@@ -1,13 +1,14 @@
 package no.synth.revertalicious.settings
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.support.v7.preference.PreferenceManager
+import android.widget.Toast
+import no.synth.revertalicious.MainActivity
 import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
 
-class Settings(context: Context) {
+class Settings(context: MainActivity) {
 
     private var preferences: SharedPreferences
 
@@ -15,6 +16,12 @@ class Settings(context: Context) {
         PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+        preferences.registerOnSharedPreferenceChangeListener { _, _ ->
+            context.runOnUiThread {
+                Toast.makeText(context, "Saved!", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun authenticationMethod(): AuthenticationMethod =

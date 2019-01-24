@@ -76,13 +76,10 @@ class GitTask(
             }
             git.push().setDryRun(false).call()
         } catch (e: Exception) {
-
-            (context as Activity).runOnUiThread(object : Runnable {
-                override fun run() {
-                    Toast.makeText(context, "Error: " + e.toString(), Toast.LENGTH_SHORT).show()
-                    e.printStackTrace()
-                }
-            })
+            (context as Activity).runOnUiThread {
+                Toast.makeText(context, "Error: " + e.toString(), Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
         }
     }
 
