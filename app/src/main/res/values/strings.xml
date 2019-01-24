@@ -4,4 +4,27 @@
     <string name="welcome">Welcome to Revertalicious!</string>
     <string name="description">Click the button below to revert the last commit.</string>
     <string name="revert">Revert!</string>
+
+    <string name="pref_cat_github">GitHub Configuration</string>
+    <string name="pref_cat_notifications">Notifications</string>
+    <string name="pref_cat_help">Help</string>
+
+    <string name="pref_repository">Repository URL</string>
+    <string name="pref_auth_method">Authentication method</string>
+    <string name="pref_password">Password (optional)</string>
+    <string name="pref_private_key">Private key</string>
+    <string name="pref_notifications">Enable notifications</string>
+    <string name="pref_feedback">Send feedback</string>
+    <string name="pref_feedback_summary">Report technical issues or suggest new features</string>
+
+    <string-array name="pref_auth_titles">
+        <item>Public key</item>
+        <item>Password</item>
+        <item>Token</item>
+    </string-array>
+    <string-array name="pref_auth_values">
+        <item>pubkey</item>
+        <item>password</item>
+        <item>token</item>
+    </string-array>
 </resources>

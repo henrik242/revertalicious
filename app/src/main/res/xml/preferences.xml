@@ -4,42 +4,45 @@
 
     <PreferenceCategory
             app:key="git_category"
-            app:title="GitHub Configuration">
+            app:title="@string/pref_cat_github">
 
         <EditTextPreference
                 app:key="repository"
-                app:title="Repository URL"/>
-        <EditTextPreference
+                app:title="@string/pref_repository"/>
+        <ListPreference
+                app:defaultValue="pubkey"
                 app:key="auth_method"
-                app:title="Authentication method"/>
+                app:title="@string/pref_auth_method"
+                app:entries="@array/pref_auth_titles"
+                app:entryValues="@array/pref_auth_values"/>
         <EditTextPreference
                 app:key="password"
-                app:title="Password (optional)"/>
+                app:title="@string/pref_password"/>
         <EditTextPreference
                 app:key="private_key"
-                app:title="Private key"/>
+                app:title="@string/pref_private_key"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
             app:key="notifications_category"
-            app:title="Notifications">
+            app:title="@string/pref_cat_notifications">
 
         <SwitchPreferenceCompat
                 app:key="notifications"
-                app:title="Enable notifications"
+                app:title="@string/pref_notifications"
                 app:defaultValue="true"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
             app:key="help_category"
-            app:title="Help">
+            app:title="@string/pref_cat_help">
 
         <Preference
                 app:key="feedback"
-                app:summary="Report technical issues or suggest new features"
-                app:title="Send feedback"/>
+                app:summary="@string/pref_feedback_summary"
+                app:title="@string/pref_feedback"/>
 
     </PreferenceCategory>
 

@@ -15,6 +15,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val RESPOSITORY = "repository"
+        const val AUTH_METHOD = "auth_method"
+        const val PASSWORD = "password"
+        const val PRIVATE_KEY = "private_key"
         const val NOTIFICATIONS = "notifications"
     }
 }

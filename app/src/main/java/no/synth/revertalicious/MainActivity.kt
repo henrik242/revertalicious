@@ -35,18 +35,14 @@ class MainActivity : AppCompatActivity() {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val notifications = preferences.getBoolean(SettingsActivity.NOTIFICATIONS, false)
+        val settingsAuthMethod = preferences.getString(SettingsActivity.AUTH_METHOD, null)?.let { AuthenticationMethod.parse(it) }
+        val settingsRepoUrl = preferences.getString(SettingsActivity.RESPOSITORY, null)?.let { Uri.parse(it) }
+        val settingsPassword = preferences.getString(SettingsActivity.PASSWORD, null)
+        val settingsPrivateKey = preferences.getString(SettingsActivity.PRIVATE_KEY, null)
 
-        Toast.makeText(this, "Notifications: $notifications", Toast.LENGTH_SHORT).show()
-
-        val settingsAuthMethod = AuthenticationMethod.pubkey
-        val settingsRepoUrl: Uri = Uri.parse("git@github.com:henrik242/testing123.git")
-        val settingsPassword: String? = null
-        val settingsPrivateKey: String? = resources.openRawResource(R.raw.testing_priv_key).bufferedReader().readText()
+        Toast.makeText(this, "Auth: $settingsAuthMethod Repo: $settingsRepoUrl Password: $settingsPassword Key: ${settingsPrivateKey != null}", Toast.LENGTH_LONG).show()
 
         revert.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
-
             GitTask(
                 settingsRepoUrl,
                 settingsPassword,
@@ -78,10 +74,17 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private enum class AuthenticationMethod { password, pubkey, token; }
+private enum class AuthenticationMethod {
+    password, pubkey, token;
+
+    companion object {
+        fun parse(value: String): AuthenticationMethod? =
+            AuthenticationMethod.values().find { it.name == value.toLowerCase() }
+    }
+}
 
 private class GitTask(
-    val repoUrl: Uri,
+    val repoUrl: Uri?,
     val password: String?,
     val sshPrivateKey: String?,
     val authMethod: AuthenticationMethod?,
@@ -111,7 +114,7 @@ private class GitTask(
                     } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
                 AuthenticationMethod.password -> {
-                    val username = repoUrl.userInfo
+                    val username = repoUrl?.userInfo
                     if (password != null && username != null) {
                         gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, password))
                     } else {
