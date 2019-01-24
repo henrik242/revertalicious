@@ -2,6 +2,7 @@ package no.synth.revertalicious
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -23,13 +24,20 @@ class MainActivity : AppCompatActivity() {
         val settings = Settings(this)
 
         revert.setOnClickListener {
-            GitTask(
-                settings.value(RESPOSITORY) ?: "",
-                settings.value(PASSWORD),
-                settings.value(PRIVATE_KEY),
-                settings.authenticationMethod(),
-                this
-            ).execute()
+            AlertDialog.Builder(this)
+                .setTitle("Reverting!")
+                .setMessage("Do you really want to revert the last commit?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes) { _, _ ->
+                    GitTask(
+                        settings.value(RESPOSITORY) ?: "",
+                        settings.value(PASSWORD),
+                        settings.value(PRIVATE_KEY),
+                        settings.authenticationMethod(),
+                        this@MainActivity
+                    ).execute()
+                }
+                .setNegativeButton(android.R.string.no, null).show()
         }
     }
 
