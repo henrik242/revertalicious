@@ -92,6 +92,9 @@ private class GitTask(
             when (authMethod) {
                 AuthenticationMethod.pubkey ->
                     sshPrivateKey?.let {
+                        if (!it.contains(" BEGIN RSA ")) {
+                            throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
+                        }
                         gitBuilder.setTransportConfigCallback(sshTransportCallback(localDir.name, it, password)).call()
                     } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
