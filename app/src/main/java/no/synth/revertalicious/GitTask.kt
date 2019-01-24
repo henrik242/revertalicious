@@ -7,6 +7,7 @@ import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import no.synth.revertalicious.auth.AuthenticationMethod
+import no.synth.revertalicious.auth.AuthenticationMethod.*
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.TransportConfigCallback
 import org.eclipse.jgit.transport.JschConfigSessionFactory
@@ -18,13 +19,13 @@ import java.io.File
 
 class GitTask(
     val repoUrl: String,
-    val password: String?,
+    val passwd: String?,
     val sshPrivateKey: String?,
     val authMethod: AuthenticationMethod,
     val context: Context
 ) : AsyncTask<String, Int, Unit>() {
 
-    override fun doInBackground(vararg params: String) {
+    public override fun doInBackground(vararg params: String) {
 
         try {
             val localDir = resolveDir(context.filesDir, repoUrl)
@@ -34,28 +35,28 @@ class GitTask(
                 .setURI(repoUrl)
                 .setDirectory(localDir)
 
-            val gitUrl = resolveUrl(repoUrl, authMethod)
+            val gitUrl = resolveUrl(repoUrl)
 
             when (authMethod) {
-                AuthenticationMethod.pubkey ->
+                pubkey ->
                     sshPrivateKey?.let {
                         if (!it.contains("BEGIN RSA ")) {
                             throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
                         }
-                        gitBuilder.setTransportConfigCallback(sshTransportCallback(context, gitUrl, it, password)).call()
+                        gitBuilder.setTransportConfigCallback(sshTransportCallback(context, gitUrl, it, passwd)).call()
                     } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
-                AuthenticationMethod.password -> {
+                password -> {
                     val username = gitUrl.user
-                    if (password != null && username != null) {
-                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, password))
+                    if (passwd != null && username != null) {
+                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
                     } else {
                         throw IllegalArgumentException("Missing username or password")
                     }
                 }
 
-                AuthenticationMethod.token ->
-                    password?.let {
+                token ->
+                    passwd?.let {
                         gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider("token", it))
                     } ?: throw IllegalArgumentException("Missing password")
             }
@@ -76,29 +77,29 @@ class GitTask(
             }
             git.push().setDryRun(false).call()
         } catch (e: Exception) {
-            (context as Activity).runOnUiThread {
-                Toast.makeText(context, "Error: " + e.toString(), Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
+            if (context is Activity) {
+                context.runOnUiThread {
+                    Toast.makeText(context, "Error: " + e.toString(), Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                throw e
             }
         }
     }
 
     companion object {
 
-        fun resolveUrl(repoUrl: String, authMethod: AuthenticationMethod): GitUrl {
-
-            val matches = when (authMethod) {
-                AuthenticationMethod.pubkey -> Regex("^(.*)@(.*):.*/([^/]+)$").find(repoUrl)?.groupValues
-                else -> Regex("^.*:/*([0-9a-zA-Z]*@)?(.*?)/.*?([^/]+)$").find(repoUrl)?.groupValues
-            }
-            return matches?.let {
+        fun resolveUrl(repoUrl: String): GitUrl =
+            when {
+                repoUrl.matches(gitUrlPattern) -> gitUrlPattern.find(repoUrl)?.groupValues
+                else -> regularUrlPattern.find(repoUrl)?.groupValues
+            }?.let {
                 GitUrl(
                     user = if (it[1].isNotEmpty()) it[1].replace("@", "") else null,
                     host = it[2],
                     dir = it[3]
                 )
             } ?: throw IllegalArgumentException("Cannot parse url: $repoUrl")
-        }
 
         private fun resolveDir(filesDir: File, repoUrl: String): File =
             filesDir.resolve(repoUrl.substring(repoUrl.lastIndexOf("/") + 1))
@@ -148,6 +149,9 @@ class GitTask(
 
             fileOrDirectory.delete()
         }
+
+        val gitUrlPattern = Regex("^(\\w+)@([.\\w]+):.*/(.*?)$")
+        val regularUrlPattern = Regex("^\\w+://(\\w*@)?(.*?)/.*?([^/]+)$")
     }
 }
 
