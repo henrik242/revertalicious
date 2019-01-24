@@ -3,13 +3,15 @@ package no.synth.revertalicious
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import no.synth.revertalicious.GitTask.Companion.AuthenticationMethod
+import no.synth.revertalicious.settings.Settings
+import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
+import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
+import no.synth.revertalicious.settings.Settings.Companion.RESPOSITORY
+import no.synth.revertalicious.settings.SettingsActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,22 +20,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
+        val settings = Settings(this)
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val settingsAuthMethod = AuthenticationMethod.parse(preferences.getString(SettingsActivity.AUTH_METHOD, null))
-        val settingsRepoUrl = preferences.getString(SettingsActivity.RESPOSITORY, null) ?: ""
-        val settingsPassword = preferences.getString(SettingsActivity.PASSWORD, null)
-        val settingsPrivateKey = preferences.getString(SettingsActivity.PRIVATE_KEY, null)
-
-        Toast.makeText(
-            this,
-            "Auth: $settingsAuthMethod Repo: $settingsRepoUrl Password: $settingsPassword Key: ${settingsPrivateKey != null}",
-            Toast.LENGTH_LONG
-        ).show()
-
-        revert.setOnClickListener { _ ->
-            GitTask(settingsRepoUrl, settingsPassword, settingsPrivateKey, settingsAuthMethod,this).execute()
+        revert.setOnClickListener {
+            GitTask(
+                settings.value(RESPOSITORY) ?: "",
+                settings.value(PASSWORD),
+                settings.value(PRIVATE_KEY),
+                settings.authenticationMethod(),
+                this
+            ).execute()
         }
     }
 

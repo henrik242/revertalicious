@@ -6,7 +6,7 @@ import android.os.AsyncTask
 import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
-import no.synth.revertalicious.GitTask.Companion.AuthenticationMethod.pubkey
+import no.synth.revertalicious.auth.AuthenticationMethod
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.TransportConfigCallback
 import org.eclipse.jgit.transport.JschConfigSessionFactory
@@ -37,7 +37,7 @@ class GitTask(
             val gitUrl = resolveUrl(repoUrl, authMethod)
 
             when (authMethod) {
-                pubkey ->
+                AuthenticationMethod.pubkey ->
                     sshPrivateKey?.let {
                         if (!it.contains("BEGIN RSA ")) {
                             throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
@@ -91,7 +91,7 @@ class GitTask(
         fun resolveUrl(repoUrl: String, authMethod: AuthenticationMethod): GitUrl {
 
             val matches = when (authMethod) {
-                pubkey -> Regex("^(.*)@(.*):.*/([^/]+)$").find(repoUrl)?.groupValues
+                AuthenticationMethod.pubkey -> Regex("^(.*)@(.*):.*/([^/]+)$").find(repoUrl)?.groupValues
                 else -> Regex("^.*:/*([0-9a-zA-Z]*@)?(.*?)/.*?([^/]+)$").find(repoUrl)?.groupValues
             }
             return matches?.let {
@@ -150,14 +150,6 @@ class GitTask(
                     deleteRecursive(child)
 
             fileOrDirectory.delete()
-        }
-
-        enum class AuthenticationMethod {
-            password, pubkey, token;
-
-            companion object {
-                fun parse(value: String?) = values().find { it.name == value?.toLowerCase() } ?: password
-            }
         }
     }
 }
