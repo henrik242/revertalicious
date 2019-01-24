@@ -2,11 +2,13 @@ package no.synth.revertalicious
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -23,13 +25,19 @@ import org.eclipse.jgit.transport.SshTransport
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.eclipse.jgit.util.FS
 
-
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
+
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val notifications = preferences.getBoolean(SettingsActivity.NOTIFICATIONS, false)
+
+        Toast.makeText(this, "Notifications: $notifications", Toast.LENGTH_SHORT).show()
 
         val settingsAuthMethod = AuthenticationMethod.pubkey
         val settingsRepoUrl: Uri = Uri.parse("git@github.com:henrik242/testing123.git")
@@ -60,7 +68,11 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
