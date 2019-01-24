@@ -1,15 +1,28 @@
 package no.synth.revertalicious
 
+import android.app.Activity
+import android.content.Context
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import com.jcraft.jsch.JSch
+import com.jcraft.jsch.Session
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.eclipse.jgit.api.Git
-import java.io.File
+import org.eclipse.jgit.api.TransportConfigCallback
+import org.eclipse.jgit.transport.JschConfigSessionFactory
+import org.eclipse.jgit.transport.OpenSshConfig.Host
+import org.eclipse.jgit.transport.SshSessionFactory
+import org.eclipse.jgit.transport.SshTransport
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import org.eclipse.jgit.util.FS
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,10 +31,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        val settingsAuthMethod = AuthenticationMethod.pubkey
+        val settingsRepoUrl: Uri = Uri.parse("git@github.com:henrik242/testing123.git")
+        val settingsPassword: String? = null
+        val settingsPrivateKey: String? = resources.openRawResource(R.raw.testing_priv_key).bufferedReader().readText()
+
         revert.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
 
-            GitTask().execute("https://github.com/henrik242/testing123.git", applicationContext.filesDir.resolve("repo").absolutePath)
+            GitTask(
+                settingsRepoUrl,
+                settingsPassword,
+                settingsPrivateKey,
+                settingsAuthMethod,
+                this
+            ).execute()
         }
     }
 
@@ -42,24 +66,101 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private class GitTask : AsyncTask<String, Int, Unit>() {
-    override fun doInBackground(vararg params: String): Unit {
-        val repo = File(params[1])
-        repo.deleteRecursively()
+private enum class AuthenticationMethod { password, pubkey, token; }
 
-        val git = Git.cloneRepository().setURI(params[0]).setDirectory(repo).call()
-        System.out.println("før")
+private class GitTask(
+    val repoUrl: Uri,
+    val password: String?,
+    val sshPrivateKey: String?,
+    val authMethod: AuthenticationMethod?,
+    val context: Context
+) : AsyncTask<String, Int, Unit>() {
 
-        git.log().call().forEach {
-            System.out.println(it.fullMessage)
+    override fun doInBackground(vararg params: String) {
+
+        try {
+            val localDir = context.filesDir.resolve(
+                repoUrl.toString().substring(repoUrl.toString().lastIndexOf("/") + 1)
+            )
+
+            localDir.deleteRecursively()
+
+            val gitBuilder = Git.cloneRepository()
+                .setURI(repoUrl.toString())
+                .setDirectory(localDir)
+
+            when (authMethod) {
+                AuthenticationMethod.pubkey ->
+                    sshPrivateKey?.let {
+                        gitBuilder.setTransportConfigCallback(sshTransportCallback(localDir.name, it, password)).call()
+                    } ?: throw IllegalArgumentException("Missing sshPrivateKey")
+
+                AuthenticationMethod.password -> {
+                    val username = repoUrl.userInfo
+                    if (password != null && username != null) {
+                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, password))
+                    } else {
+                        throw IllegalArgumentException("Missing username or password")
+                    }
+                }
+
+                AuthenticationMethod.token ->
+                    password?.let {
+                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider("token", it))
+                    } ?: throw IllegalArgumentException("Missing password")
+            }
+
+            val git = gitBuilder.call()
+
+            System.out.println("før")
+
+            git.log().call().forEach {
+                System.out.println(it.fullMessage)
+            }
+            git.revert().include(git.log().call().first()).call()
+
+            System.out.println("etter")
+            git.log().call().forEach {
+                System.out.println(it.fullMessage)
+            }
+            git.push().setDryRun(true).call()
+        } catch (e: Exception) {
+
+            (context as Activity).runOnUiThread(object : Runnable {
+                override fun run() {
+                    Toast.makeText(context, "Error: " + e.toString(), Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+            })
         }
-        git.revert().include(git.log().call().first()).call()
+    }
 
-        System.out.println("etter")
-        git.log().call().forEach {
-            System.out.println(it.fullMessage)
+    companion object {
+
+        fun sshTransportCallback(name: String, privKey: String, password: String? = null): TransportConfigCallback {
+
+            val sshSessionFactory: SshSessionFactory = object : JschConfigSessionFactory() {
+
+                override fun configure(host: Host, session: Session) = Unit
+
+                override fun createDefaultJSch(fs: FS): JSch {
+                    val defaultJSch = super.createDefaultJSch(fs)
+                    defaultJSch.addIdentity(
+                        name,
+                        privKey.toByteArray(Charsets.UTF_8),
+                        null,
+                        password?.toByteArray(Charsets.UTF_8)
+                    )
+                    JSch.setConfig("StrictHostKeyChecking", "no");
+                    return defaultJSch
+                }
+            }
+
+            return TransportConfigCallback {
+                val sshTransport: SshTransport = it as SshTransport
+                sshTransport.sshSessionFactory = sshSessionFactory
+            }
         }
-        git.push().setDryRun(true).call()
     }
 }
 
