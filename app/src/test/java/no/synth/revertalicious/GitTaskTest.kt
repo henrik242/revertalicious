@@ -2,7 +2,7 @@ package no.synth.revertalicious
 
 import android.content.Context
 import no.synth.revertalicious.GitTask.Companion.resolveUrl
-import no.synth.revertalicious.auth.AuthenticationMethod.token
+import no.synth.revertalicious.auth.AuthenticationMethod
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,16 +52,16 @@ class GitTaskTest {
     @Test
     fun can_ssh_auth() {
         val tmpDir = File(System.getProperty("java.io.tmpdir") + System.currentTimeMillis())
-        val password = this.javaClass.getResource("/test_passwd").readText()
+        val passwd = this.javaClass.getResource("/test_passwd").readText()
 
         try {
             `when`(mockContext.filesDir).thenReturn(tmpDir)
 
             val task = GitTask(
                 "https://github.com/henrik242/testing123.git",
-                password,
+                passwd,
                 null,
-                token,
+                AuthenticationMethod.password,
                 mockContext
             )
             task.doInBackground()
@@ -70,5 +70,4 @@ class GitTaskTest {
             tmpDir.deleteRecursively()
         }
     }
-
 }
