@@ -20,7 +20,8 @@
                 app:title="@string/pref_username"/>
         <EditTextPreference
                 app:key="password"
-                app:title="@string/pref_password"/>
+                app:title="@string/pref_password"
+                app:isPreferenceVisible="false"/>
         <EditTextPreference
                 app:key="private_key"
                 app:title="@string/pref_private_key"/>
