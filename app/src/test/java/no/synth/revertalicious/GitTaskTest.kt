@@ -5,9 +5,9 @@ import no.synth.revertalicious.auth.AuthenticationMethod
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.File
+import org.mockito.Mockito.`when` as mwhen
 
 @RunWith(MockitoJUnitRunner::class)
 class GitTaskTest {
@@ -22,7 +22,7 @@ class GitTaskTest {
         val username = "henrik242"
 
         try {
-            `when`(mockContext.filesDir).thenReturn(tmpDir)
+            mwhen(mockContext.filesDir).thenReturn(tmpDir)
 
             val task = GitTask(
                 "https://github.com/henrik242/testing123.git",
