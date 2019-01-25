@@ -57,7 +57,7 @@ class GitTask(
         } catch (e: Exception) {
             if (context is Activity) {
                 context.runOnUiThread {
-                    Toast.makeText(context, "Error: $e", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error: $e", Toast.LENGTH_LONG).show()
                 }
                 e.printStackTrace()
             } else {
