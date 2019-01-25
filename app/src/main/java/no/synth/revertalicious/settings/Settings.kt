@@ -32,7 +32,7 @@ class Settings(context: MainActivity) {
     fun value(value: String): String? = preferences.getString(value, null)
 
     companion object {
-        const val RESPOSITORY = "repository"
+        const val REPOSITORY = "repository"
         const val AUTH_METHOD = "auth_method"
         const val USERNAME = "username"
         const val PASSWORD = "password"

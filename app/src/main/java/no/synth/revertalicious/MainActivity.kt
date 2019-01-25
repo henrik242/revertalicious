@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.content_main.*
 import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
 import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
-import no.synth.revertalicious.settings.Settings.Companion.RESPOSITORY
+import no.synth.revertalicious.settings.Settings.Companion.REPOSITORY
 import no.synth.revertalicious.settings.Settings.Companion.USERNAME
 import no.synth.revertalicious.settings.SettingsActivity
 
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes) { _, _ ->
                     GitTask(
-                        settings.value(RESPOSITORY) ?: "",
+                        settings.value(REPOSITORY) ?: "",
                         settings.value(USERNAME),
                         settings.value(PASSWORD),
                         settings.value(PRIVATE_KEY),
