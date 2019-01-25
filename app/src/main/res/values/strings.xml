@@ -19,11 +19,9 @@
     <string-array name="pref_auth_titles">
         <item>Public key</item>
         <item>Password</item>
-        <item>Token</item>
     </string-array>
     <string-array name="pref_auth_values">
         <item>pubkey</item>
         <item>password</item>
-        <item>token</item>
     </string-array>
 </resources>

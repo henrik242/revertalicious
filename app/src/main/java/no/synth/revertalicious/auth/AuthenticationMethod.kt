@@ -2,8 +2,7 @@ package no.synth.revertalicious.auth
 
 enum class AuthenticationMethod {
     password,
-    pubkey,
-    token;
+    pubkey;
 
     companion object {
         fun parse(value: String): AuthenticationMethod? =

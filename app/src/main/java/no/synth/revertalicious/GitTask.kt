@@ -7,13 +7,12 @@ import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import no.synth.revertalicious.auth.AuthenticationMethod
-import no.synth.revertalicious.auth.AuthenticationMethod.*
+import no.synth.revertalicious.auth.AuthenticationMethod.password
+import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.api.TransportConfigCallback
-import org.eclipse.jgit.transport.JschConfigSessionFactory
-import org.eclipse.jgit.transport.OpenSshConfig
-import org.eclipse.jgit.transport.SshTransport
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import java.io.File
 
@@ -25,44 +24,26 @@ class GitTask(
     val context: Context
 ) : AsyncTask<String, Int, Unit>() {
 
+    val gitUrl : GitUrl
+
+    init {
+        gitUrl = resolveUrl(repoUrl)
+    }
+
     public override fun doInBackground(vararg params: String) {
 
         try {
             val localDir = resolveDir(context.filesDir, repoUrl)
             deleteRecursive(localDir)
 
-            val gitBuilder = Git.cloneRepository()
+            val cloneCmd = Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(localDir)
 
-            val gitUrl = resolveUrl(repoUrl)
-
-            when (authMethod) {
-                pubkey ->
-                    sshPrivateKey?.let {
-                        if (!it.contains("BEGIN RSA ")) {
-                            throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
-                        }
-                        gitBuilder.setTransportConfigCallback(sshTransportCallback(context, gitUrl, it, passwd)).call()
-                    } ?: throw IllegalArgumentException("Missing sshPrivateKey")
-
-                password -> {
-                    val username = gitUrl.user
-                    if (passwd != null && username != null) {
-                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
-                    } else {
-                        throw IllegalArgumentException("Missing username or password")
-                    }
-                }
-
-                token ->
-                    passwd?.let {
-                        gitBuilder.setCredentialsProvider(UsernamePasswordCredentialsProvider("token", it))
-                    } ?: throw IllegalArgumentException("Missing password")
-            }
-
             deleteRecursive(localDir)
-            val git = gitBuilder.call()
+
+            authenticate(cloneCmd)
+            val git = cloneCmd.call()
 
             System.out.println("før")
 
@@ -75,7 +56,9 @@ class GitTask(
             git.log().call().forEach {
                 System.out.println(it.fullMessage)
             }
-            git.push().setDryRun(false).call()
+
+            push(git)
+
         } catch (e: Exception) {
             if (context is Activity) {
                 context.runOnUiThread {
@@ -87,7 +70,33 @@ class GitTask(
         }
     }
 
+    private fun push(git: Git) : Iterable<PushResult> {
+        val pushCmd = git.push()
+        authenticate(pushCmd)
+        return pushCmd.call()
+    }
+
+    private fun authenticate(cmd: TransportCommand<*, *>) = when (authMethod) {
+        pubkey ->
+            sshPrivateKey?.let {
+                if (!it.contains("BEGIN RSA ")) {
+                    throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
+                }
+                cmd.setTransportConfigCallback(sshTransportCallback(context, gitUrl, it, passwd)).call()
+            } ?: throw IllegalArgumentException("Missing sshPrivateKey")
+
+        password -> {
+            val username = gitUrl.user
+            if (passwd != null && username != null) {
+                cmd.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
+            } else {
+                throw IllegalArgumentException("Missing username or password")
+            }
+        }
+    }
+
     companion object {
+
 
         fun resolveUrl(repoUrl: String): GitUrl =
             when {
