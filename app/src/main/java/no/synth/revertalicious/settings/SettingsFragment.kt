@@ -8,6 +8,7 @@ import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.settings.Settings.Companion.AUTH_METHOD
 import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
+import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
 import no.synth.revertalicious.settings.Settings.Companion.REPOSITORY
 import no.synth.revertalicious.settings.Settings.Companion.USERNAME
 
@@ -19,11 +20,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val repository = findPreference(REPOSITORY) as EditTextPreference
         val username = findPreference(USERNAME) as EditTextPreference
         val password = findPreference(PASSWORD) as EditTextPreference
+        val privateKey = findPreference(PRIVATE_KEY) as EditTextPreference
 
         repository.summary = repository.text
         authMethod.summary = authMethod.value
         username.summary = username.text
         password.isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.password
+        privateKey.isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.pubkey
 
         repository.setOnPreferenceChangeListener { preference, value ->
             preference.summary = value.toString()
@@ -31,8 +34,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         authMethod.setOnPreferenceChangeListener { preference, value ->
-            preference.summary = value.toString()
+            preference.summary = value.toString().capitalize()
             password.isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.password
+            privateKey.isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.pubkey
             true
         }
 
