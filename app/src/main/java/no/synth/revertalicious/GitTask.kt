@@ -59,6 +59,7 @@ class GitTask(
                 context.runOnUiThread {
                     Toast.makeText(context, "Error: $e", Toast.LENGTH_SHORT).show()
                 }
+                e.printStackTrace()
             } else {
                 throw e
             }
@@ -66,7 +67,7 @@ class GitTask(
     }
 
     private fun printLastTen(git: Git) {
-        git.log().call().forEach {
+        git.log().setMaxCount(10).call().forEach {
             System.out.println(it.fullMessage)
         }
     }
