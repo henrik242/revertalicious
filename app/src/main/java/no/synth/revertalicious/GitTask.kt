@@ -18,6 +18,7 @@ import java.io.File
 
 class GitTask(
     val repoUrl: String,
+    val username: String?,
     val passwd: String?,
     val sshPrivateKey: String?,
     val authMethod: AuthenticationMethod,

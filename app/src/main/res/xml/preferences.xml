@@ -16,6 +16,9 @@
                 app:entries="@array/pref_auth_titles"
                 app:entryValues="@array/pref_auth_values"/>
         <EditTextPreference
+                app:key="username"
+                app:title="@string/pref_username"/>
+        <EditTextPreference
                 app:key="password"
                 app:title="@string/pref_password"/>
         <EditTextPreference
