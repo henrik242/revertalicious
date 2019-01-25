@@ -25,7 +25,7 @@ class GitTask(
     val context: Context
 ) : AsyncTask<String, Int, Unit>() {
 
-    val gitUrl : GitUrl
+    val gitUrl: GitUrl
 
     init {
         gitUrl = resolveUrl(repoUrl)
@@ -71,7 +71,7 @@ class GitTask(
         }
     }
 
-    private fun push(git: Git) : Iterable<PushResult> {
+    private fun push(git: Git): Iterable<PushResult> {
         val pushCmd = git.push()
         authenticate(pushCmd)
         return pushCmd.call()
@@ -87,7 +87,6 @@ class GitTask(
             } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
         password -> {
-            val username = gitUrl.user
             if (passwd != null && username != null) {
                 cmd.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
             } else {
@@ -114,7 +113,7 @@ class GitTask(
         private fun resolveDir(filesDir: File, repoUrl: String): File =
             filesDir.resolve(repoUrl.substring(repoUrl.lastIndexOf("/") + 1))
 
-        fun sshTransportCallback(context: Context, repoUrl: GitUrl, privKey: String, password: String? = null): TransportConfigCallback {
+        fun sshTransportCallback(context: Context, gitUrl: GitUrl, privKey: String, password: String? = null): TransportConfigCallback {
 
             fun sshSessionFactory() = object : JschConfigSessionFactory() {
 
@@ -137,7 +136,7 @@ class GitTask(
 //                        override fun getKnownHostsRepositoryID(): String = "someId"
 //                    }
                     jsch.addIdentity(
-                        repoUrl.host,
+                        gitUrl.host,
                         privKey.toByteArray(Charsets.UTF_8),
                         null,
                         password?.toByteArray(Charsets.UTF_8)
