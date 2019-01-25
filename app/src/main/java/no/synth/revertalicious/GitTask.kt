@@ -12,12 +12,12 @@ import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.password
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ResetCommand
 import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.api.TransportConfigCallback
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
-import java.io.File
 
 class GitTask(
     val repoUrl: String,
@@ -31,7 +31,7 @@ class GitTask(
     public override fun doInBackground(vararg params: String) {
 
         try {
-            val git = clone()
+            val git = cloneOrOpen()
 
             System.out.println("før")
 
@@ -72,38 +72,57 @@ class GitTask(
         }
     }
 
-    private fun revertLast(git: Git) : RevCommit = git.revert().include(git.log().call().first()).call()
+    private fun revertLast(git: Git): RevCommit = git.revert().include(git.log().call().first()).call()
 
-    private fun clone(): Git {
-        val localDir = resolveDir(context.filesDir, repoUrl)
-        deleteRecursive(localDir)
-        val cloneCmd = Git.cloneRepository().setURI(repoUrl).setDirectory(localDir)
-        authenticate(cloneCmd)
-        return cloneCmd.call()
+    private fun cloneOrOpen(): Git {
+        val localDir = context.filesDir.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
+        if (localDir.exists()) {
+            System.err.println("Opening")
+            val git = Git.open(localDir)
+
+            resetToLatestOnRemote(git)
+
+            git.pull().authenticate().call()
+            return git
+        } else {
+            System.err.println("Cloning")
+            return Git
+                .cloneRepository()
+                .setURI(repoUrl)
+                .setDirectory(localDir)
+                .authenticate()
+                .call()
+        }
+    }
+
+    private fun resetToLatestOnRemote(git: Git) {
+        val latestRemoteSha = git.lsRemote().call().first().objectId.name
+        git.reset().setMode(ResetCommand.ResetType.HARD).setRef(latestRemoteSha).call()
     }
 
     private fun push(git: Git): Iterable<PushResult> {
-        val pushCmd = git.push()
-        authenticate(pushCmd)
-        return pushCmd.call()
+        return git.push().authenticate().call()
     }
 
-    private fun authenticate(cmd: TransportCommand<*, *>) = when (authMethod) {
-        pubkey ->
-            sshPrivateKey?.let {
-                if (!it.contains("BEGIN RSA ")) {
-                    throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
-                }
-                cmd.setTransportConfigCallback(sshTransportCallback())
-            } ?: throw IllegalArgumentException("Missing sshPrivateKey")
+    private fun <C : TransportCommand<*, *>> C.authenticate(): C {
+        when (authMethod) {
+            pubkey ->
+                sshPrivateKey?.let {
+                    if (!it.contains("BEGIN RSA ")) {
+                        throw IllegalArgumentException("You need an older style openssh key, created with 'ssh-keygen -t rsa -m PEM'")
+                    }
+                    this.setTransportConfigCallback(sshTransportCallback())
+                } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
-        password -> {
-            if (passwd != null && username != null) {
-                cmd.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
-            } else {
-                throw IllegalArgumentException("Missing username or password")
+            password -> {
+                if (passwd != null && username != null) {
+                    this.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
+                } else {
+                    throw IllegalArgumentException("Missing username or password")
+                }
             }
         }
+        return this
     }
 
     private fun sshTransportCallback(): TransportConfigCallback {
@@ -131,20 +150,6 @@ class GitTask(
         return TransportConfigCallback {
             val sshTransport: SshTransport = it as SshTransport
             sshTransport.sshSessionFactory = sshSessionFactory()
-        }
-    }
-
-    companion object {
-
-        private fun resolveDir(filesDir: File, repoUrl: String): File =
-            filesDir.resolve(repoUrl.substring(repoUrl.lastIndexOf("/") + 1))
-
-
-        private fun deleteRecursive(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) {
-                for (child in fileOrDirectory.listFiles()) deleteRecursive(child)
-            }
-            fileOrDirectory.delete()
         }
     }
 }
