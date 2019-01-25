@@ -3,6 +3,8 @@ package no.synth.revertalicious
 import android.app.Activity
 import android.content.Context
 import android.os.AsyncTask
+import android.view.Gravity
+import android.widget.ImageView
 import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -40,6 +42,14 @@ class GitTask(
 
             printLastTen(git)
             push(git)
+
+            val toast = Toast(context)
+            val view = ImageView(context)
+            view.setImageResource(R.drawable.ic_success)
+            view.setPadding(64, 64, 64, 64)
+            toast.view = view
+            toast.setGravity(Gravity.FILL, 0, 0)
+            toast.show()
 
         } catch (e: Exception) {
             if (context is Activity) {
