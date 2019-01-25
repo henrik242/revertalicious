@@ -12,6 +12,7 @@ import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
 import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
 import no.synth.revertalicious.settings.Settings.Companion.RESPOSITORY
+import no.synth.revertalicious.settings.Settings.Companion.USERNAME
 import no.synth.revertalicious.settings.SettingsActivity
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton(android.R.string.yes) { _, _ ->
                     GitTask(
                         settings.value(RESPOSITORY) ?: "",
+                        settings.value(USERNAME),
                         settings.value(PASSWORD),
                         settings.value(PRIVATE_KEY),
                         settings.authenticationMethod(),

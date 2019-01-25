@@ -10,6 +10,7 @@
 
     <string name="pref_repository">Repository URL</string>
     <string name="pref_auth_method">Authentication method</string>
+    <string name="pref_username">Username</string>
     <string name="pref_password">Password (optional)</string>
     <string name="pref_private_key">Private key</string>
     <string name="pref_notifications">Enable notifications</string>
