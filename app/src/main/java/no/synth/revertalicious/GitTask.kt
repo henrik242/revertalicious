@@ -43,14 +43,17 @@ class GitTask(
             printLastTen(git)
             push(git)
 
-            val toast = Toast(context)
-            val view = ImageView(context)
-            view.setImageResource(R.drawable.ic_success)
-            view.setPadding(64, 64, 64, 64)
-            toast.view = view
-            toast.setGravity(Gravity.FILL, 0, 0)
-            toast.show()
-
+            if (context is Activity) {
+                context.runOnUiThread {
+                    val toast = Toast(context)
+                    val view = ImageView(context)
+                    view.setImageResource(R.drawable.ic_success)
+                    view.setPadding(64, 64, 64, 64)
+                    toast.view = view
+                    toast.setGravity(Gravity.FILL, 0, 0)
+                    toast.show()
+                }
+            }
         } catch (e: Exception) {
             if (context is Activity) {
                 context.runOnUiThread {
