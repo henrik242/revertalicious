@@ -14,3 +14,5 @@
 .externalNativeBuild
 app/src/main/res/raw/testing_priv_key
 app/src/test/resources/test_passwd
+app/release
+app/debug
