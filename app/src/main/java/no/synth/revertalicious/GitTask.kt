@@ -18,27 +18,30 @@ import org.eclipse.jgit.api.TransportConfigCallback
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
+import java.lang.ref.WeakReference
 
 class GitTask(
-    val repoUrl: String,
-    val username: String?,
-    val passwd: String?,
-    val sshPrivateKey: String?,
-    val authMethod: AuthenticationMethod,
-    val context: Context
+    private val repoUrl: String,
+    private val username: String?,
+    private val passwd: String?,
+    private val sshPrivateKey: String?,
+    private val authMethod: AuthenticationMethod,
+    private val contextRef: WeakReference<Context>
 ) : AsyncTask<String, Int, Unit>() {
 
     public override fun doInBackground(vararg params: String) {
 
+        val context = contextRef.get()
+
         try {
             val git = cloneOrOpen()
 
-            System.out.println("før")
+            System.out.println("before revert:")
 
             printLastTen(git)
             revertLast(git)
 
-            System.out.println("etter")
+            System.out.println("after revert:")
 
             printLastTen(git)
             push(git)
@@ -75,8 +78,8 @@ class GitTask(
     private fun revertLast(git: Git): RevCommit = git.revert().include(git.log().call().first()).call()
 
     private fun cloneOrOpen(): Git {
-        val localDir = context.filesDir.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
-        if (localDir.exists()) {
+        val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
+        if (localDir?.exists() == true) {
             System.err.println("Opening")
             val git = Git.open(localDir)
 
@@ -130,13 +133,13 @@ class GitTask(
         fun sshSessionFactory() = object : JschConfigSessionFactory() {
 
             override fun configure(host: OpenSshConfig.Host, session: Session) {
-                session.setConfig("StrictHostKeyChecking", "no");
+                session.setConfig("StrictHostKeyChecking", "no")
             }
 
             override fun createDefaultJSch(fs: FS): JSch {
                 //val jsch = super.createDefaultJSch(fs)
                 val jsch = JSch()
-                jsch.setKnownHosts(context.resources.openRawResource(R.raw.known_hosts))
+                jsch.setKnownHosts(contextRef.get()?.resources?.openRawResource(R.raw.known_hosts))
                 jsch.addIdentity(
                     repoUrl,
                     sshPrivateKey?.toByteArray(Charsets.UTF_8),

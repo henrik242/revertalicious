@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.File
+import java.lang.ref.WeakReference
 import org.mockito.Mockito.`when` as mwhen
 
 @RunWith(MockitoJUnitRunner::class)
@@ -17,8 +18,8 @@ class GitTaskTest {
 
     @Test
     fun can_ssh_auth() {
-        val tmpDir = File(System.getProperty("java.io.tmpdir") + System.currentTimeMillis())
-        val passwd = this.javaClass.getResource("/test_passwd").readText()
+        val tmpDir = File(System.getProperty("java.io.tmpdir")?.let { it + System.currentTimeMillis() })
+        val passwd = this.javaClass.getResource("/test_passwd")?.readText()
         val username = "henrik242"
 
         try {
@@ -30,7 +31,7 @@ class GitTaskTest {
                 passwd,
                 null,
                 AuthenticationMethod.password,
-                mockContext
+                WeakReference(mockContext)
             )
             task.doInBackground()
 

@@ -17,10 +17,11 @@ import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
 import no.synth.revertalicious.settings.Settings.Companion.REPOSITORY
 import no.synth.revertalicious.settings.Settings.Companion.USERNAME
 import no.synth.revertalicious.settings.SettingsActivity
+import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
 
-    var settings: Settings? = null
+    private var settings: Settings? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             settings.value(PASSWORD),
             settings.value(PRIVATE_KEY),
             settings.authenticationMethod(),
-            this@MainActivity
+            WeakReference(this@MainActivity)
         ).execute()
     }
 
