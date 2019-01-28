@@ -32,7 +32,7 @@
             app:key="notifications_category"
             app:title="@string/pref_cat_notifications">
 
-        <SwitchPreferenceCompat
+        <SwitchPreference
                 app:key="notifications"
                 app:title="@string/pref_notifications"
                 app:defaultValue="true"/>
