@@ -3,6 +3,7 @@ package no.synth.revertalicious
 import android.app.Activity
 import android.content.Context
 import android.os.AsyncTask
+import android.util.Log
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.Toast
@@ -37,12 +38,12 @@ class GitTask(
         try {
             val git = cloneOrOpen()
 
-            System.out.println("before revert:")
+            log("before revert:")
 
             printLastTen(git)
             revertLast(git)
 
-            System.out.println("after revert:")
+            log("after revert:")
 
             printLastTen(git)
             push(git)
@@ -63,7 +64,7 @@ class GitTask(
                 context.runOnUiThread {
                     Toast.makeText(context, "Error: $e", Toast.LENGTH_LONG).show()
                 }
-                e.printStackTrace()
+                log("Failing!", e)
             } else {
                 throw e
             }
@@ -72,7 +73,7 @@ class GitTask(
 
     private fun printLastTen(git: Git) {
         git.log().setMaxCount(10).call().forEach {
-            System.out.println(it.fullMessage)
+            log(it.fullMessage)
         }
     }
 
@@ -81,15 +82,15 @@ class GitTask(
     private fun cloneOrOpen(): Git {
         val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
         if (localDir?.exists() == true) {
-            System.err.println("Opening")
+            log("Opening")
             val git = Git.open(localDir)
 
-            resetToLatestOnRemote(git)
-
             git.pull().authenticate().call()
+
+            resetToLatestOnRemote(git)
             return git
         } else {
-            System.err.println("Cloning")
+            log("Cloning")
             return Git
                 .cloneRepository()
                 .setURI(repoUrl)
@@ -101,6 +102,7 @@ class GitTask(
 
     private fun resetToLatestOnRemote(git: Git) {
         val latestRemoteSha = git.lsRemote().call().first().objectId.name
+        log("Resetting to $latestRemoteSha")
         git.reset().setMode(ResetCommand.ResetType.HARD).setRef(latestRemoteSha).call()
     }
 
@@ -155,6 +157,10 @@ class GitTask(
             val sshTransport: SshTransport = it as SshTransport
             sshTransport.sshSessionFactory = sshSessionFactory()
         }
+    }
+
+    companion object {
+        fun log(message: String, throwable: Throwable? = null) = Log.v(GitTask::class.java.simpleName, message, throwable)
     }
 }
 
