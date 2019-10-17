@@ -19,6 +19,7 @@ import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
+import kotlin.text.Charsets.UTF_8
 
 class GitTask(
     private val repoUrl: String,
@@ -142,9 +143,9 @@ class GitTask(
                 jsch.setKnownHosts(contextRef.get()?.resources?.openRawResource(R.raw.known_hosts))
                 jsch.addIdentity(
                     repoUrl,
-                    sshPrivateKey?.toByteArray(Charsets.UTF_8),
+                    sshPrivateKey?.toByteArray(UTF_8),
                     null,
-                    passwd?.toByteArray(Charsets.UTF_8)
+                    passwd?.toByteArray(UTF_8)
                 )
                 return jsch
             }
