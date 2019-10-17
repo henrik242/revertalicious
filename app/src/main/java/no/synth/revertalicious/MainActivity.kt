@@ -1,12 +1,17 @@
 package no.synth.revertalicious
 
+import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.KeyEvent.ACTION_UP
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -36,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyRevert(settings: Settings) {
+        disableRevertButton(this)
+
         AlertDialog.Builder(this)
             .setTitle("Reverting!")
             .setMessage("Do you really want to revert the last commit?")
@@ -43,7 +50,9 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(android.R.string.yes) { _, _ ->
                 performRevert(settings)
             }
-            .setNegativeButton(android.R.string.no, null)
+            .setNegativeButton(android.R.string.no) { _, _ ->
+                enableRevertButton(this)
+            }
             .setOnKeyListener(object : DialogInterface.OnKeyListener {
                 override fun onKey(dialog: DialogInterface?, keyCode: Int, event: KeyEvent?): Boolean {
                     return if (event?.action == ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
@@ -95,5 +104,28 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    companion object {
+        fun disableRevertButton(activity: Activity) {
+            activity.findViewById<TextView>(R.id.main_description).setText(R.string.revert_waiting)
+
+            activity.findViewById<ImageView>(R.id.revert).apply {
+                background.setColorFilter(Color.argb(50, 0, 0, 0), PorterDuff.Mode.MULTIPLY)
+                setColorFilter(Color.argb(50, 0, 0, 0), PorterDuff.Mode.MULTIPLY)
+                isEnabled = false
+            }
+        }
+
+        fun enableRevertButton(activity: Activity) {
+            activity.findViewById<TextView>(R.id.main_description).setText(R.string.description)
+
+            activity.findViewById<ImageView>(R.id.revert).apply {
+                background.clearColorFilter()
+                clearColorFilter()
+                isEnabled = true
+            }
+        }
+
     }
 }

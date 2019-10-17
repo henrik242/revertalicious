@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
+import no.synth.revertalicious.MainActivity.Companion.enableRevertButton
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.password
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
@@ -57,6 +58,8 @@ class GitTask(
                     toast.view = view
                     toast.setGravity(Gravity.FILL, 0, 0)
                     toast.show()
+
+                    enableRevertButton(context)
                 }
             }
         } catch (e: Exception) {

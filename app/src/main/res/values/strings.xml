@@ -3,6 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="description">Click the button below to revert the last commit.</string>
     <string name="revert">Revert!</string>
+    <string name="revert_waiting">Reverting, please wait…</string>
 
     <string name="pref_cat_github">GitHub Configuration</string>
     <string name="pref_cat_notifications">Notifications</string>
