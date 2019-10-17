@@ -1,9 +1,9 @@
 package no.synth.revertalicious.settings
 
 import android.os.Bundle
-import android.support.v7.preference.EditTextPreference
-import android.support.v7.preference.ListPreference
-import android.support.v7.preference.PreferenceFragmentCompat
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceFragmentCompat
 import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.settings.Settings.Companion.AUTH_METHOD
@@ -16,31 +16,33 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        val authMethod = findPreference(AUTH_METHOD) as ListPreference
-        val repository = findPreference(REPOSITORY) as EditTextPreference
-        val username = findPreference(USERNAME) as EditTextPreference
-        val password = findPreference(PASSWORD) as EditTextPreference
-        val privateKey = findPreference(PRIVATE_KEY) as EditTextPreference
+        val authMethod: ListPreference? = findPreference(AUTH_METHOD)
+        val repository: EditTextPreference? = findPreference(REPOSITORY)
+        val username: EditTextPreference? = findPreference(USERNAME)
+        val password: EditTextPreference? = findPreference(PASSWORD)
+        val privateKey: EditTextPreference? = findPreference(PRIVATE_KEY)
 
-        repository.summary = repository.text
-        authMethod.summary = authMethod.value
-        username.summary = username.text
-        password.isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.password
-        privateKey.isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.pubkey
+        repository?.apply { summary = text }
+        authMethod?.apply {
+            summary = value
+            password?.apply { isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.password }
+            privateKey?.apply { isVisible = AuthenticationMethod.parse(authMethod.value) == AuthenticationMethod.pubkey }
+        }
+        username?.apply { summary = text }
 
-        repository.setOnPreferenceChangeListener { preference, value ->
+        repository?.setOnPreferenceChangeListener { preference, value ->
             preference.summary = value.toString()
             true
         }
 
-        authMethod.setOnPreferenceChangeListener { preference, value ->
+        authMethod?.setOnPreferenceChangeListener { preference, value ->
             preference.summary = value.toString().capitalize()
-            password.isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.password
-            privateKey.isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.pubkey
+            password?.apply { isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.password }
+            privateKey?.apply { isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.pubkey }
             true
         }
 
-        username.setOnPreferenceChangeListener { preference, value ->
+        username?.setOnPreferenceChangeListener { preference, value ->
             preference.summary = value.toString()
             true
         }

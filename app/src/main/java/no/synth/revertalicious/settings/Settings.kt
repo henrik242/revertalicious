@@ -1,8 +1,8 @@
 package no.synth.revertalicious.settings
 
 import android.content.SharedPreferences
-import android.support.v7.preference.PreferenceManager
 import android.widget.Toast
+import androidx.preference.PreferenceManager
 import no.synth.revertalicious.MainActivity
 import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod

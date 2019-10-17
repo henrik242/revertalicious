@@ -1,7 +1,7 @@
 package no.synth.revertalicious.settings
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import no.synth.revertalicious.R
 
 class SettingsActivity : AppCompatActivity() {
