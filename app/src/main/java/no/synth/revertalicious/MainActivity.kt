@@ -1,7 +1,6 @@
 package no.synth.revertalicious
 
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -53,17 +52,15 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton(android.R.string.no) { _, _ ->
                 enableRevertButton(this)
             }
-            .setOnKeyListener(object : DialogInterface.OnKeyListener {
-                override fun onKey(dialog: DialogInterface?, keyCode: Int, event: KeyEvent?): Boolean {
-                    return if (event?.action == ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
-                        performRevert(settings)
-                        dialog?.dismiss()
-                        true
-                    } else {
-                        false
-                    }
+            .setOnKeyListener { dialog, keyCode, event ->
+                if (event?.action == ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
+                    performRevert(settings)
+                    dialog?.dismiss()
+                    true
+                } else {
+                    false
                 }
-            })
+            }
             .show()
     }
 

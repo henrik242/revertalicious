@@ -23,7 +23,7 @@ import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
-class GitTask(
+open class GitTask(
     private val repoUrl: String,
     private val username: String?,
     private val passwd: String?,
@@ -162,8 +162,8 @@ class GitTask(
         }
     }
 
-    companion object {
-        fun log(message: String, throwable: Throwable? = null) = Log.v(GitTask::class.java.simpleName, message, throwable)
+    open fun log(message: String, throwable: Throwable? = null) {
+        Log.v(GitTask::class.java.simpleName, message, throwable)
     }
 }
 

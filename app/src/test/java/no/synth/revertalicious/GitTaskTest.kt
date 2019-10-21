@@ -25,14 +25,16 @@ class GitTaskTest {
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
 
-            val task = GitTask(
+            val task = object : GitTask(
                 "https://github.com/henrik242/testing123.git",
                 username,
                 passwd,
                 null,
                 AuthenticationMethod.password,
                 WeakReference(mockContext)
-            )
+            ) {
+                override fun log(message: String, throwable: Throwable?) = System.err.println("$message $throwable")
+            }
             task.doInBackground()
 
         } finally {
