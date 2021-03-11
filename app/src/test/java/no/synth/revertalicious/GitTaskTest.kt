@@ -18,7 +18,7 @@ class GitTaskTest {
 
     @Test
     fun can_ssh_auth() {
-        val tmpDir = File((System.getProperty("java.io.tmpdir") ?: "/tmp/") + System.currentTimeMillis())
+        val tmpDir = File((System.getProperty("java.io.tmpdir") ?: "/tmp") + "/test-" + System.currentTimeMillis())
         val passwd = if (System.getenv("GITTASKTEST_PASS").isNullOrBlank()) {
             this.javaClass.getResource("/gittasktest_pass")?.readText()
         } else {
@@ -34,8 +34,6 @@ class GitTaskTest {
         } else {
             System.getenv("GITTASKTEST_REPO")
         }
-
-        System.err.println("$username $passwd")
 
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
