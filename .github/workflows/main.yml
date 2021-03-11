@@ -35,6 +35,10 @@ jobs:
           echo $FIREBASE_SECRET > app/google-services.json
 
       - name: Gradle build
+        env:
+          GITTASKTEST_USER: ${{ secrets.GITTASKTEST_USER }}
+          GITTASKTEST_PASS: ${{ secrets.GITTASKTEST_PASS }}
+          GITTASKTEST_REPO: ${{ secrets.GITTASKTEST_REPO }}
         run: ./gradlew build -s -i
 
       - name: Upload APK
