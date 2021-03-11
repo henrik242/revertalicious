@@ -85,7 +85,7 @@ open class GitTask(
     private fun cloneOrOpen(): Git {
         val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
         if (localDir?.exists() == true) {
-            log("Opening")
+            log("Opening $repoUrl")
             val git = Git.open(localDir)
 
             git.pull().authenticate().call()
@@ -93,7 +93,7 @@ open class GitTask(
             resetToLatestOnRemote(git)
             return git
         } else {
-            log("Cloning")
+            log("Cloning $repoUrl")
             return Git
                 .cloneRepository()
                 .setURI(repoUrl)
