@@ -35,6 +35,8 @@ class GitTaskTest {
             System.getenv("GITTASKTEST_REPO")
         }
 
+        System.err.println("$username $passwd")
+
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
 
