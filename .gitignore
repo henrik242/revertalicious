@@ -13,6 +13,7 @@
 /captures
 .externalNativeBuild
 app/src/main/res/raw/testing_priv_key
-app/src/test/resources/test_passwd
+app/src/test/resources/gittasktest_pass
 app/release
 app/debug
+app/google-services.json

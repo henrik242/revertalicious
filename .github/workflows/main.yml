@@ -19,6 +19,12 @@ jobs:
         with:
           java-version: '15'
 
+      - name: Decode google-services.json
+        env:
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
+        run:
+          echo $FIREBASE_SECRET > app/google-services.json
+
       - name: Gradle build
         run: ./gradlew build -s -i
 
