@@ -18,21 +18,21 @@ class GitTaskTest {
 
     @Test
     fun can_ssh_auth() {
-        val tmpDir = File((System.getProperty("java.io.tmpdir") ?: "/tmp") + System.currentTimeMillis())
-        val passwd = if (System.getProperty("GITTASKTEST_PASS").isNullOrBlank()) {
+        val tmpDir = File((System.getProperty("java.io.tmpdir") ?: "/tmp/") + System.currentTimeMillis())
+        val passwd = if (System.getenv("GITTASKTEST_PASS").isNullOrBlank()) {
             this.javaClass.getResource("/gittasktest_pass")?.readText()
         } else {
-            System.getProperty("GITTASKTEST_PASS")
+            System.getenv("GITTASKTEST_PASS")
         }
-        val username = if (System.getProperty("GITTASKTEST_USER").isNullOrBlank()) {
+        val username = if (System.getenv("GITTASKTEST_USER").isNullOrBlank()) {
             "henrik242"
         } else {
-            System.getProperty("GITTASKTEST_USER")
+            System.getenv("GITTASKTEST_USER")
         }
-        val repoUrl = if (System.getProperty("GITTASKTEST_REPO").isNullOrBlank()) {
+        val repoUrl = if (System.getenv("GITTASKTEST_REPO").isNullOrBlank()) {
             "https://github.com/henrik242/testing123.git"
         } else {
-            System.getProperty("GITTASKTEST_REPO")
+            System.getenv("GITTASKTEST_REPO")
         }
 
         try {
