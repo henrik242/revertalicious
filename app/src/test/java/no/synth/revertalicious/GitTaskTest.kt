@@ -19,21 +19,10 @@ class GitTaskTest {
     @Test
     fun can_ssh_auth() {
         val tmpDir = File((System.getProperty("java.io.tmpdir") ?: "/tmp") + "/test-" + System.currentTimeMillis())
-        val passwd = if (System.getenv("GITTASKTEST_PASS").isNullOrBlank()) {
-            this.javaClass.getResource("/gittasktest_pass")?.readText()
-        } else {
-            System.getenv("GITTASKTEST_PASS")
-        }
-        val username = if (System.getenv("GITTASKTEST_USER").isNullOrBlank()) {
-            "henrik242"
-        } else {
-            System.getenv("GITTASKTEST_USER")
-        }
-        val repoUrl = if (System.getenv("GITTASKTEST_REPO").isNullOrBlank()) {
-            "https://github.com/henrik242/testing123.git"
-        } else {
-            System.getenv("GITTASKTEST_REPO")
-        }
+
+        val passwd = envOrElse("GITTASKTEST_PASS", (javaClass.getResource("/gittasktest_pass")?.readText() ?: ""))
+        val username = envOrElse("GITTASKTEST_USER", "henrik242")
+        val repoUrl = envOrElse("GITTASKTEST_REPO", "https://github.com/henrik242/testing123.git")
 
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
@@ -48,10 +37,13 @@ class GitTaskTest {
             ) {
                 override fun log(message: String, throwable: Throwable?) = System.err.println("$message $throwable")
             }
-            task.doInBackground()
+            task.cloneOrOpen()
+            task.executeRevert()
 
         } finally {
             tmpDir.deleteRecursively()
         }
     }
+
+    fun envOrElse(env: String, fallback: String) = if (System.getenv(env).isNullOrBlank()) fallback else System.getenv(env)
 }

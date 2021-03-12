@@ -52,14 +52,15 @@ open class GitTask(
 
             if (context is Activity) {
                 context.runOnUiThread {
-                    val toast = Toast(context)
-                    val view = ImageView(context)
-                    view.setImageResource(R.drawable.ic_success)
-                    view.setPadding(64, 64, 64, 64)
-                    toast.view = view
-                    toast.setGravity(Gravity.FILL, 0, 0)
-                    toast.show()
-
+                    val view = ImageView(context).apply {
+                        setImageResource(R.drawable.ic_success)
+                        setPadding(64, 64, 64, 64)
+                    }
+                    val toast = Toast(context).apply {
+                        setView(view)
+                        setGravity(Gravity.FILL, 0, 0)
+                        show()
+                    }
                     enableRevertButton(context)
                 }
             }
