@@ -2,7 +2,6 @@ package no.synth.revertalicious
 
 import android.app.Activity
 import android.content.Context
-import android.os.AsyncTask
 import android.util.Log
 import android.view.Gravity
 import android.widget.ImageView
@@ -30,24 +29,26 @@ open class GitTask(
     private val sshPrivateKey: String?,
     private val authMethod: AuthenticationMethod,
     private val contextRef: WeakReference<Context>
-) : AsyncTask<String, Int, Unit>() {
+) {
 
-    public override fun doInBackground(vararg params: String) {
+    var git: Git? = null
+
+    fun executeRevert() {
 
         val context = contextRef.get()
 
         try {
-            val git = cloneOrOpen()
-
             log("before revert:")
 
-            printLastTen(git)
-            revertLast(git)
+            git?.let {
+                printLastTen(it)
+                revertLast(it)
 
-            log("after revert:")
+                log("after revert:")
 
-            printLastTen(git)
-            push(git)
+                printLastTen(it)
+                push(it)
+            } ?: log("git was null")
 
             if (context is Activity) {
                 context.runOnUiThread {
@@ -82,24 +83,16 @@ open class GitTask(
 
     private fun revertLast(git: Git): RevCommit = git.revert().include(git.log().call().first()).call()
 
-    private fun cloneOrOpen(): Git {
+    fun cloneOrOpen() {
         val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
-        if (localDir?.exists() == true) {
+        git = if (localDir?.exists() == true) {
             log("Opening $repoUrl")
-            val git = Git.open(localDir)
-
-            git.pull().authenticate().call()
-
-            resetToLatestOnRemote(git)
-            return git
+            Git.open(localDir)
+                .apply { pull().authenticate().call() }
+                .also { resetToLatestOnRemote(it) }
         } else {
             log("Cloning $repoUrl")
-            return Git
-                .cloneRepository()
-                .setURI(repoUrl)
-                .setDirectory(localDir)
-                .authenticate()
-                .call()
+            Git.cloneRepository().setURI(repoUrl).setDirectory(localDir).authenticate().call()
         }
     }
 
@@ -109,9 +102,7 @@ open class GitTask(
         git.reset().setMode(ResetCommand.ResetType.HARD).setRef(latestRemoteSha).call()
     }
 
-    private fun push(git: Git): Iterable<PushResult> {
-        return git.push().authenticate().call()
-    }
+    private fun push(git: Git): Iterable<PushResult> = git.push().authenticate().call()
 
     private fun <C : TransportCommand<*, *>> C.authenticate(): C {
         when (authMethod) {
@@ -124,10 +115,10 @@ open class GitTask(
                 } ?: throw IllegalArgumentException("Missing sshPrivateKey")
 
             password -> {
-                if (passwd != null && username != null) {
-                    this.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
-                } else {
+                if (passwd.isNullOrBlank() || username.isNullOrBlank()) {
                     throw IllegalArgumentException("Missing username or password")
+                } else {
+                    this.setCredentialsProvider(UsernamePasswordCredentialsProvider(username, passwd))
                 }
             }
         }
@@ -142,23 +133,23 @@ open class GitTask(
                 session.setConfig("StrictHostKeyChecking", "no")
             }
 
-            override fun createDefaultJSch(fs: FS): JSch {
+            override fun createDefaultJSch(fs: FS): JSch =
                 //val jsch = super.createDefaultJSch(fs)
-                val jsch = JSch()
-                jsch.setKnownHosts(contextRef.get()?.resources?.openRawResource(R.raw.known_hosts))
-                jsch.addIdentity(
-                    repoUrl,
-                    sshPrivateKey?.toByteArray(UTF_8),
-                    null,
-                    passwd?.toByteArray(UTF_8)
-                )
-                return jsch
-            }
+                JSch().apply {
+                    setKnownHosts(contextRef.get()?.resources?.openRawResource(R.raw.known_hosts))
+                    addIdentity(
+                        repoUrl,
+                        sshPrivateKey?.toByteArray(UTF_8),
+                        null,
+                        passwd?.toByteArray(UTF_8)
+                    )
+                }
         }
 
         return TransportConfigCallback {
-            val sshTransport: SshTransport = it as SshTransport
-            sshTransport.sshSessionFactory = sshSessionFactory()
+            (it as SshTransport).apply {
+                sshSessionFactory = sshSessionFactory()
+            }
         }
     }
 

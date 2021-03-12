@@ -8,7 +8,7 @@ android {
     compileSdkVersion(30)
     defaultConfig {
         applicationId = "no.synth.revertalicious"
-        minSdkVersion(26)
+        minSdkVersion(29)
         targetSdkVersion(30)
         versionCode = 1
         versionName = "1.0"
@@ -34,6 +34,8 @@ dependencies {
     implementation("com.google.android.material:material:1.3.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:4.5.5.201812240535-r") // 4.5.x is the last with JDK7 support
     implementation("com.google.firebase:firebase-core:18.0.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.3.0")

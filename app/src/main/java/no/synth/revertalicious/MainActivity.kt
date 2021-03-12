@@ -13,8 +13,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.coroutines.*
 import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
 import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
@@ -25,36 +27,54 @@ import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
 
-    private var settings: Settings? = null
+    private var gitTask: GitTask? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        settings = Settings(this)
+        val settings = Settings(this)
 
-        revert.setOnClickListener {
-            settings?.let { verifyRevert(it) }
+        gitTask = GitTask(
+            settings.value(REPOSITORY) ?: "",
+            settings.value(USERNAME),
+            settings.value(PASSWORD),
+            settings.value(PRIVATE_KEY),
+            settings.authenticationMethod(),
+            WeakReference(this@MainActivity)
+        ).also { task ->
+
+            lifecycleScope.launch {
+                disableRevertButton(this@MainActivity, R.string.sync_waiting)
+                withContext(Dispatchers.IO) {
+                    task.cloneOrOpen()
+                }
+                enableRevertButton(this@MainActivity)
+            }
+
+            revert.setOnClickListener {
+                verifyRevert(task)
+            }
         }
     }
 
-    private fun verifyRevert(settings: Settings) {
+    private fun verifyRevert(task: GitTask) {
         disableRevertButton(this)
 
         AlertDialog.Builder(this)
             .setTitle("Reverting!")
             .setMessage("Do you really want to revert the last commit?")
             .setIcon(android.R.drawable.ic_dialog_alert)
-            .setPositiveButton(android.R.string.yes) { _, _ ->
-                performRevert(settings)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                performRevert(task)
             }
-            .setNegativeButton(android.R.string.no) { _, _ ->
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
                 enableRevertButton(this)
             }
             .setOnKeyListener { dialog, keyCode, event ->
                 if (event?.action == ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
-                    performRevert(settings)
+                    performRevert(task)
                     dialog?.dismiss()
                     true
                 } else {
@@ -64,20 +84,19 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun performRevert(settings: Settings) {
-        GitTask(
-            settings.value(REPOSITORY) ?: "",
-            settings.value(USERNAME),
-            settings.value(PASSWORD),
-            settings.value(PRIVATE_KEY),
-            settings.authenticationMethod(),
-            WeakReference(this@MainActivity)
-        ).execute()
+    private fun performRevert(task: GitTask) {
+        lifecycleScope.launch {
+            disableRevertButton(this@MainActivity)
+            withContext(Dispatchers.IO) {
+                task.executeRevert()
+            }
+            enableRevertButton(this@MainActivity)
+        }
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean = when (keyCode) {
         KeyEvent.KEYCODE_ENTER -> {
-            settings?.let { verifyRevert(it) }
+            gitTask?.let { verifyRevert(it) }
             true
         }
         else -> super.onKeyUp(keyCode, event)
@@ -104,14 +123,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun disableRevertButton(activity: Activity) {
-            activity.findViewById<TextView>(R.id.main_description).setText(R.string.revert_waiting)
+        fun disableRevertButton(activity: Activity, textRes: Int = R.string.revert_waiting) {
+            activity.findViewById<TextView>(R.id.main_description).setText(textRes)
 
+            val blend = Color.argb(50, 0, 0, 0)
             activity.findViewById<ImageView>(R.id.revert).apply {
-                background.setColorFilter(Color.argb(50, 0, 0, 0), PorterDuff.Mode.MULTIPLY)
-                setColorFilter(Color.argb(50, 0, 0, 0), PorterDuff.Mode.MULTIPLY)
+                background.setColorFilter(blend, PorterDuff.Mode.MULTIPLY)
+                setColorFilter(blend, PorterDuff.Mode.MULTIPLY)
                 isEnabled = false
             }
+//            val blend = BlendModeColorFilter(Color.argb(50, 0, 0, 0), BlendMode.MULTIPLY)
+//            activity.findViewById<ImageView>(R.id.revert).apply {
+//                background.colorFilter = blend
+//                colorFilter = blend
+//                isEnabled = false
+//            }
         }
 
         fun enableRevertButton(activity: Activity) {
@@ -123,6 +149,5 @@ class MainActivity : AppCompatActivity() {
                 isEnabled = true
             }
         }
-
     }
 }
