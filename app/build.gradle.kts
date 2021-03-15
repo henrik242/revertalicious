@@ -23,10 +23,21 @@ android {
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
     }
+    compileOptions {
+        // Flag to enable support for the new language APIs
+        isCoreLibraryDesugaringEnabled = true
+
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 dependencies {
-    implementation(fileTree("dir" to "libs", "include" to listOf("*.jar")))
+    implementation(fileTree("libs") { include(listOf("*.jar")) })
+
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.31")
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.preference:preference:1.1.1")
@@ -40,7 +51,10 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.3.0")
     testImplementation("org.mockito:mockito-core:3.8.0")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 }
 apply(plugin = "com.google.gms.google-services")

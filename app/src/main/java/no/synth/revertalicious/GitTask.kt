@@ -34,7 +34,6 @@ open class GitTask(
     var git: Git? = null
 
     fun executeRevert() {
-
         val context = contextRef.get()
 
         try {
@@ -56,7 +55,7 @@ open class GitTask(
                         setImageResource(R.drawable.ic_success)
                         setPadding(64, 64, 64, 64)
                     }
-                    val toast = Toast(context).apply {
+                    Toast(context).apply {
                         setView(view)
                         setGravity(Gravity.FILL, 0, 0)
                         show()
