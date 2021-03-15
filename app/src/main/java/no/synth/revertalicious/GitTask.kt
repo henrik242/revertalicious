@@ -23,18 +23,24 @@ import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
-open class GitTask(s: Settings, private val contextRef: WeakReference<Context>) {
-    private var repoUrl: String? = null
-    private var username: String? = null
-    private var passwd: String? = null
-    private var sshPrivateKey: String? = null
-    private var authMethod: AuthenticationMethod? = null
-
+open class GitTask(
+    var repoUrl: String? = null,
+    var username: String? = null,
+    var passwd: String? = null,
+    var sshPrivateKey: String? = null,
+    var authMethod: AuthenticationMethod? = null,
+    val contextRef: WeakReference<Context>
+) {
     var git: Git? = null
 
-    init {
-        updateSettings(s)
-    }
+    constructor(s: Settings, context: Context) : this(
+        repoUrl = s.value(Settings.REPOSITORY),
+        username = s.value(Settings.USERNAME),
+        passwd = s.value(Settings.PASSWORD),
+        sshPrivateKey = s.value(Settings.PRIVATE_KEY),
+        authMethod = s.authenticationMethod(),
+        contextRef = WeakReference(context)
+    )
 
     fun updateSettings(s: Settings) {
         repoUrl = s.value(Settings.REPOSITORY)

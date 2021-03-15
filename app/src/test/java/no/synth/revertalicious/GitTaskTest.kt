@@ -26,7 +26,6 @@ class GitTaskTest {
 
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
-
             val task = object : GitTask(
                 repoUrl,
                 username,

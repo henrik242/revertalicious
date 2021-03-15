@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.SettingsActivity
-import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         disableRevertButton(this, R.string.sync_waiting)
 
         if (gitTask == null) {
-            gitTask = GitTask(Settings(this), WeakReference(this@MainActivity))
+            gitTask = GitTask(Settings(this), this)
         } else {
             gitTask?.updateSettings(Settings(this))
         }
