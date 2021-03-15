@@ -2,8 +2,7 @@ package no.synth.revertalicious
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.KeyEvent.ACTION_UP
@@ -18,10 +17,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import no.synth.revertalicious.settings.Settings
-import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
-import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
-import no.synth.revertalicious.settings.Settings.Companion.REPOSITORY
-import no.synth.revertalicious.settings.Settings.Companion.USERNAME
 import no.synth.revertalicious.settings.SettingsActivity
 import java.lang.ref.WeakReference
 
@@ -126,18 +121,12 @@ class MainActivity : AppCompatActivity() {
         fun disableRevertButton(activity: Activity, textRes: Int = R.string.revert_waiting) {
             activity.findViewById<TextView>(R.id.main_description).setText(textRes)
 
-            val blend = Color.argb(50, 0, 0, 0)
+            val filter = PorterDuffColorFilter(Color.argb(50, 0, 0, 0), PorterDuff.Mode.MULTIPLY)
             activity.findViewById<ImageView>(R.id.revert).apply {
-                background.setColorFilter(blend, PorterDuff.Mode.MULTIPLY)
-                setColorFilter(blend, PorterDuff.Mode.MULTIPLY)
+                background.colorFilter = filter
+                colorFilter = filter
                 isEnabled = false
             }
-//            val blend = BlendModeColorFilter(Color.argb(50, 0, 0, 0), BlendMode.MULTIPLY)
-//            activity.findViewById<ImageView>(R.id.revert).apply {
-//                background.colorFilter = blend
-//                colorFilter = blend
-//                isEnabled = false
-//            }
         }
 
         fun enableRevertButton(activity: Activity) {
