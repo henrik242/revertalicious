@@ -11,25 +11,24 @@ import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
 import no.synth.revertalicious.databinding.ActivityMainBinding
 import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.SettingsActivity
 import java.lang.ref.WeakReference
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
 
     private var gitTask: GitTask? = null
     private lateinit var binding: ActivityMainBinding
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
+        setActionBar(binding.toolbar)
 
         disableRevertButton(this, R.string.sync_waiting)
 
@@ -47,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             gitTask = GitTask(Settings(this), WeakReference(this))
         }
         var success: Boolean
-        lifecycleScope.launch {
+        scope.launch {
             withContext(Dispatchers.IO) {
                 success = gitTask?.cloneOrOpen() ?: false
             }
@@ -85,7 +84,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performRevert() {
-        lifecycleScope.launch {
+        scope.launch {
             disableRevertButton(this@MainActivity)
             withContext(Dispatchers.IO) {
                 gitTask?.executeRevert()

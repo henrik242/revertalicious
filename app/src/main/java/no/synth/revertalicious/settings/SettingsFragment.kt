@@ -6,6 +6,7 @@ import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod
+import no.synth.revertalicious.auth.AuthenticationMethod.Companion.nb_NO
 import no.synth.revertalicious.settings.Settings.Companion.AUTH_METHOD
 import no.synth.revertalicious.settings.Settings.Companion.PASSWORD
 import no.synth.revertalicious.settings.Settings.Companion.PRIVATE_KEY
@@ -36,7 +37,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         authMethod?.setOnPreferenceChangeListener { preference, value ->
-            preference.summary = value.toString().capitalize()
+            preference.summary = value.toString().capitalize(nb_NO)
             password?.apply { isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.password }
             privateKey?.apply { isVisible = AuthenticationMethod.parse(value.toString()) == AuthenticationMethod.pubkey }
             true

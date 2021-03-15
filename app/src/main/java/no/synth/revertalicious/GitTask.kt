@@ -22,14 +22,14 @@ import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
-open class GitTask(val settings: Settings, val contextRef: WeakReference<Context>) {
-    var git: Git? = null
+open class GitTask(private val settings: Settings, private val contextRef: WeakReference<Context>) {
+    private var git: Git? = null
 
-    val repoUrl get() = settings.value(Settings.REPOSITORY)
-    val username get() = settings.value(Settings.USERNAME)
-    val passwd get() = settings.value(Settings.PASSWORD)
-    val sshPrivateKey get() = settings.value(Settings.PRIVATE_KEY)
-    val authMethod get() = settings.authenticationMethod()
+    private val repoUrl get() = settings.value(Settings.REPOSITORY)
+    private val username get() = settings.value(Settings.USERNAME)
+    private val passwd get() = settings.value(Settings.PASSWORD)
+    private val sshPrivateKey get() = settings.value(Settings.PRIVATE_KEY)
+    private val authMethod get() = settings.authenticationMethod()
 
     fun executeRevert() {
         val context = contextRef.get()

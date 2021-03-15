@@ -25,7 +25,7 @@ class GitTaskTest {
     @Before
     fun setup() {
         // Avoid consuming any local git config that may affect the tests
-        SystemReader.getInstance().userConfig.clear();
+        SystemReader.getInstance().userConfig.clear()
     }
 
     @Test
@@ -54,5 +54,5 @@ class GitTaskTest {
         }
     }
 
-    fun envOrElse(env: String, fallback: String) = if (System.getenv(env).isNullOrBlank()) fallback else System.getenv(env)
+    private fun envOrElse(env: String, fallback: String): String? = if (System.getenv(env).isNullOrBlank()) fallback else System.getenv(env)
 }

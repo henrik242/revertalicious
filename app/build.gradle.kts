@@ -50,7 +50,6 @@ dependencies {
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.3.0")
