@@ -2,6 +2,7 @@ package no.synth.revertalicious
 
 import android.content.Context
 import no.synth.revertalicious.auth.AuthenticationMethod
+import no.synth.revertalicious.settings.Settings
 import org.eclipse.jgit.util.SystemReader
 import org.junit.Before
 import org.junit.Test
@@ -17,6 +18,9 @@ class GitTaskTest {
 
     @Mock
     private lateinit var mockContext: Context
+
+    @Mock
+    private lateinit var settings: Settings
 
     @Before
     fun setup() {
@@ -34,14 +38,12 @@ class GitTaskTest {
 
         try {
             mwhen(mockContext.filesDir).thenReturn(tmpDir)
-            val task = object : GitTask(
-                repoUrl,
-                username,
-                passwd,
-                null,
-                AuthenticationMethod.password,
-                WeakReference(mockContext)
-            ) {
+            mwhen(settings.value(Settings.USERNAME)).thenReturn(username)
+            mwhen(settings.value(Settings.PASSWORD)).thenReturn(passwd)
+            mwhen(settings.value(Settings.REPOSITORY)).thenReturn(repoUrl)
+            mwhen(settings.authenticationMethod()).thenReturn(AuthenticationMethod.password)
+
+            val task = object : GitTask(settings, WeakReference(mockContext)) {
                 override fun log(message: String, throwable: Throwable?) = System.err.println("$message $throwable")
             }
             task.cloneOrOpen()

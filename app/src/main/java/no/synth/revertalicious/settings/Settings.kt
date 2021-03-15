@@ -8,7 +8,7 @@ import no.synth.revertalicious.R
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
 
-class Settings(context: MainActivity) {
+open class Settings(context: MainActivity) {
 
     private var preferences: SharedPreferences
 
@@ -25,12 +25,12 @@ class Settings(context: MainActivity) {
         }
     }
 
-    fun authenticationMethod(): AuthenticationMethod =
+    open fun authenticationMethod(): AuthenticationMethod =
         preferences.getString(AUTH_METHOD, null)?.let { AuthenticationMethod.parse(it) } ?: pubkey
 
-    fun notifications(): Boolean = preferences.getBoolean(NOTIFICATIONS, false)
+    open fun notifications(): Boolean = preferences.getBoolean(NOTIFICATIONS, false)
 
-    fun value(value: String): String? = preferences.getString(value, null)
+    open fun value(value: String): String? = preferences.getString(value, null)
 
     companion object {
         const val REPOSITORY = "repository"

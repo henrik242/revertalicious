@@ -9,7 +9,6 @@ import android.widget.Toast
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import no.synth.revertalicious.MainActivity.Companion.enableRevertButton
-import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.password
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
 import no.synth.revertalicious.settings.Settings
@@ -23,32 +22,14 @@ import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
-open class GitTask(
-    var repoUrl: String?,
-    var username: String?,
-    var passwd: String?,
-    var sshPrivateKey: String?,
-    var authMethod: AuthenticationMethod?,
-    val contextRef: WeakReference<Context>
-) {
+open class GitTask(val settings: Settings, val contextRef: WeakReference<Context>) {
     var git: Git? = null
 
-    constructor(s: Settings, context: Context) : this(
-        repoUrl = s.value(Settings.REPOSITORY),
-        username = s.value(Settings.USERNAME),
-        passwd = s.value(Settings.PASSWORD),
-        sshPrivateKey = s.value(Settings.PRIVATE_KEY),
-        authMethod = s.authenticationMethod(),
-        contextRef = WeakReference(context)
-    )
-
-    fun updateSettings(s: Settings) {
-        repoUrl = s.value(Settings.REPOSITORY)
-        username = s.value(Settings.USERNAME)
-        passwd = s.value(Settings.PASSWORD)
-        sshPrivateKey = s.value(Settings.PRIVATE_KEY)
-        authMethod = s.authenticationMethod()
-    }
+    val repoUrl get() = settings.value(Settings.REPOSITORY)
+    val username get() = settings.value(Settings.USERNAME)
+    val passwd get() = settings.value(Settings.PASSWORD)
+    val sshPrivateKey get() = settings.value(Settings.PRIVATE_KEY)
+    val authMethod get() = settings.authenticationMethod()
 
     fun executeRevert() {
         val context = contextRef.get()
@@ -66,7 +47,7 @@ open class GitTask(
                 push(it)
             } ?: log("git was null")
 
-            if (context is Activity) {
+            if (git != null && context is Activity) {
                 context.runOnUiThread {
                     val view = ImageView(context).apply {
                         setImageResource(R.drawable.ic_success)
