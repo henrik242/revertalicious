@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(fileTree("libs") { include(listOf("*.jar")) })
+    implementation(platform("com.google.firebase:firebase-bom:26.7.0"))
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.31")
     implementation("androidx.appcompat:appcompat:1.2.0")
@@ -48,7 +49,6 @@ dependencies {
     implementation("com.google.android.material:material:1.3.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r")
-    implementation("com.google.firebase:firebase-core:18.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
 
