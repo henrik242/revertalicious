@@ -2,6 +2,8 @@ package no.synth.revertalicious
 
 import android.content.Context
 import no.synth.revertalicious.auth.AuthenticationMethod
+import org.eclipse.jgit.util.SystemReader
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -15,6 +17,12 @@ class GitTaskTest {
 
     @Mock
     private lateinit var mockContext: Context
+
+    @Before
+    fun setup() {
+        // Avoid consuming any local git config that may affect the tests
+        SystemReader.getInstance().userConfig.clear();
+    }
 
     @Test
     fun can_ssh_auth() {

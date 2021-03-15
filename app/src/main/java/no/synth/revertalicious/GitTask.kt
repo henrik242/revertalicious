@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
 open class GitTask(
-    var repoUrl: String? = null,
-    var username: String? = null,
-    var passwd: String? = null,
-    var sshPrivateKey: String? = null,
-    var authMethod: AuthenticationMethod? = null,
+    var repoUrl: String?,
+    var username: String?,
+    var passwd: String?,
+    var sshPrivateKey: String?,
+    var authMethod: AuthenticationMethod?,
     val contextRef: WeakReference<Context>
 ) {
     var git: Git? = null
