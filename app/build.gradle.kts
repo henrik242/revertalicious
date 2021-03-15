@@ -22,6 +22,7 @@ android {
     }
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
+        exclude("plugin.properties")
     }
     compileOptions {
         // Flag to enable support for the new language APIs
@@ -43,7 +44,8 @@ dependencies {
     implementation("androidx.preference:preference:1.1.1")
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")
     implementation("com.google.android.material:material:1.3.0")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:4.5.5.201812240535-r") // 4.5.x is the last with JDK7 support
+    implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r")
     implementation("com.google.firebase:firebase-core:18.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
