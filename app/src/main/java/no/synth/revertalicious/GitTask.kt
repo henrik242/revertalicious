@@ -12,6 +12,7 @@ import no.synth.revertalicious.MainActivity.Companion.enableRevertButton
 import no.synth.revertalicious.auth.AuthenticationMethod
 import no.synth.revertalicious.auth.AuthenticationMethod.password
 import no.synth.revertalicious.auth.AuthenticationMethod.pubkey
+import no.synth.revertalicious.settings.Settings
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand
 import org.eclipse.jgit.api.TransportCommand
@@ -22,16 +23,26 @@ import org.eclipse.jgit.util.FS
 import java.lang.ref.WeakReference
 import kotlin.text.Charsets.UTF_8
 
-open class GitTask(
-    private val repoUrl: String,
-    private val username: String?,
-    private val passwd: String?,
-    private val sshPrivateKey: String?,
-    private val authMethod: AuthenticationMethod,
-    private val contextRef: WeakReference<Context>
-) {
+open class GitTask(s: Settings, private val contextRef: WeakReference<Context>) {
+    private var repoUrl: String? = null
+    private var username: String? = null
+    private var passwd: String? = null
+    private var sshPrivateKey: String? = null
+    private var authMethod: AuthenticationMethod? = null
 
     var git: Git? = null
+
+    init {
+        updateSettings(s)
+    }
+
+    fun updateSettings(s: Settings) {
+        repoUrl = s.value(Settings.REPOSITORY)
+        username = s.value(Settings.USERNAME)
+        passwd = s.value(Settings.PASSWORD)
+        sshPrivateKey = s.value(Settings.PRIVATE_KEY)
+        authMethod = s.authenticationMethod()
+    }
 
     fun executeRevert() {
         val context = contextRef.get()
@@ -83,18 +94,23 @@ open class GitTask(
 
     private fun revertLast(git: Git): RevCommit = git.revert().include(git.log().call().first()).call()
 
-    fun cloneOrOpen() {
-        val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl.replace(Regex("\\W+"), "_"))
-        git = if (localDir?.exists() == true) {
-            log("Opening $repoUrl")
-            Git.open(localDir)
-                .apply { pull().authenticate().call() }
-                .also { resetToLatestOnRemote(it) }
-        } else {
-            log("Cloning $repoUrl")
-            Git.cloneRepository().setURI(repoUrl).setDirectory(localDir).authenticate().call()
+    fun cloneOrOpen(): Boolean =
+        try {
+            val localDir = contextRef.get()?.filesDir?.resolve("repos/" + repoUrl?.replace(Regex("\\W+"), "_"))
+            git = if (localDir?.exists() == true) {
+                log("Opening $repoUrl")
+                Git.open(localDir)
+                    .apply { pull().authenticate().call() }
+                    .also { resetToLatestOnRemote(it) }
+            } else {
+                log("Cloning $repoUrl")
+                Git.cloneRepository().setURI(repoUrl).setDirectory(localDir).authenticate().call()
+            }
+            true
+        } catch (e: Exception) {
+            log("Clone failed: $e", e)
+            false
         }
-    }
 
     private fun resetToLatestOnRemote(git: Git) {
         val latestRemoteSha = git.lsRemote().call().first().objectId.name

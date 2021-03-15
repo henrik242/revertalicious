@@ -28,33 +28,37 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        disableRevertButton(this, R.string.sync_waiting)
 
-        val settings = Settings(this)
+        refreshGitTask()
 
-        gitTask = GitTask(
-            settings.value(REPOSITORY) ?: "",
-            settings.value(USERNAME),
-            settings.value(PASSWORD),
-            settings.value(PRIVATE_KEY),
-            settings.authenticationMethod(),
-            WeakReference(this@MainActivity)
-        ).also { task ->
+        revert.setOnClickListener {
+            verifyRevert()
+        }
+    }
 
-            lifecycleScope.launch {
-                disableRevertButton(this@MainActivity, R.string.sync_waiting)
-                withContext(Dispatchers.IO) {
-                    task.cloneOrOpen()
-                }
-                enableRevertButton(this@MainActivity)
+    fun refreshGitTask() {
+        disableRevertButton(this, R.string.sync_waiting)
+
+        if (gitTask == null) {
+            gitTask = GitTask(Settings(this), WeakReference(this@MainActivity))
+        } else {
+            gitTask?.updateSettings(Settings(this))
+        }
+        var success: Boolean
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                success = gitTask?.cloneOrOpen() ?: false
             }
-
-            revert.setOnClickListener {
-                verifyRevert(task)
+            if (success) {
+                enableRevertButton(this@MainActivity)
+            } else {
+                disableRevertButton(this@MainActivity, R.string.missing_config)
             }
         }
     }
 
-    private fun verifyRevert(task: GitTask) {
+    private fun verifyRevert() {
         disableRevertButton(this)
 
         AlertDialog.Builder(this)
@@ -62,14 +66,14 @@ class MainActivity : AppCompatActivity() {
             .setMessage("Do you really want to revert the last commit?")
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                performRevert(task)
+                performRevert()
             }
             .setNegativeButton(android.R.string.cancel) { _, _ ->
                 enableRevertButton(this)
             }
             .setOnKeyListener { dialog, keyCode, event ->
                 if (event?.action == ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
-                    performRevert(task)
+                    performRevert()
                     dialog?.dismiss()
                     true
                 } else {
@@ -79,11 +83,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun performRevert(task: GitTask) {
+    private fun performRevert() {
         lifecycleScope.launch {
             disableRevertButton(this@MainActivity)
             withContext(Dispatchers.IO) {
-                task.executeRevert()
+                gitTask?.executeRevert()
             }
             enableRevertButton(this@MainActivity)
         }
@@ -91,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean = when (keyCode) {
         KeyEvent.KEYCODE_ENTER -> {
-            gitTask?.let { verifyRevert(it) }
+            gitTask?.let { verifyRevert() }
             true
         }
         else -> super.onKeyUp(keyCode, event)

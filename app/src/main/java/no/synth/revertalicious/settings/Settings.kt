@@ -20,6 +20,7 @@ class Settings(context: MainActivity) {
         preferences.registerOnSharedPreferenceChangeListener { _, _ ->
             context.runOnUiThread {
                 Toast.makeText(context, "Saved!", Toast.LENGTH_SHORT).show()
+                context.refreshGitTask()
             }
         }
     }
