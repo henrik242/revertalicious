@@ -13,9 +13,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
+import no.synth.revertalicious.databinding.ActivityMainBinding
 import no.synth.revertalicious.settings.Settings
 import no.synth.revertalicious.settings.SettingsActivity
 import java.lang.ref.WeakReference
@@ -23,16 +22,20 @@ import java.lang.ref.WeakReference
 class MainActivity : AppCompatActivity() {
 
     private var gitTask: GitTask? = null
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+
         disableRevertButton(this, R.string.sync_waiting)
 
         refreshGitTask()
 
-        revert.setOnClickListener {
+        binding.revert.setOnClickListener {
             verifyRevert()
         }
     }
